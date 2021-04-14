@@ -1,0 +1,463 @@
+name: ZenPacks.daviswr.NUT
+
+class_relationships:
+  - Products.ZenModel.Device.Device(nutDevices) 1:MC NutDevice(server)
+
+classes:
+  NutDevice:
+    base: [zenpacklib.Component]
+    label: NUT Device
+    properties:
+      DeviceMfr:
+        type: string
+        label: Device Manufacturer
+        short_label: Manufacturer
+        grid_display: true
+        details_display: true
+        content_width: 180
+        label_width: 180
+        order: 11
+      DeviceModel:
+        type: string
+        label: Device Model
+        short_label: Model
+        grid_display: true
+        details_display: true
+        content_width: 135
+        label_width: 135
+        order: 12
+      DeviceName:
+        type: string
+        label: Device Name
+        short_label: Name
+        grid_display: false
+        details_display: true
+        order: 10
+      DeviceSerial:
+        type: string
+        label: Device Serial Number
+        short_label: Serial
+        grid_display: false
+        details_display: true
+      DeviceType:
+        type: string
+        # UPS, PDU, SCD, PSU, ATS
+        label: Device Type
+        short_label: Type
+        default: Unknown
+        grid_display: false
+        details_display: false
+      DriverName:
+        type: string
+        label: Driver Name
+        short_label: Driver
+        grid_display: false
+        details_display: false
+
+  UPS:
+    base: [NutDevice]
+    label: NUT UPS
+    plural_label: NUT UPS
+    short_label: UPS
+    plural_short_label: UPS
+    monitoring_templates:
+      - NUT UPS
+    properties:
+      DEFAULTS:
+        type: int
+        grid_display: false
+        details_display: true
+      BatteryCharge:
+        label: Battery Charge Percentage
+        short_label: "Charge %"
+        datapoint: upsc_battery_charge
+        grid_display: true
+        content_width: 60
+        label_width: 60
+        order: 30
+      BatteryChargeLow:
+        label: Low Battery Level
+        details_display: false
+      BatteryChargeWarning:
+        label: Warning Battery Level
+        details_display: false
+      BatteryDate:
+        type: string
+        label: Battery Changed
+        order: 22
+      BatteryMfrDate:
+        type: string
+        label: Battery Manufactured
+        details_display: false
+      BatteryRuntime:
+        label: Battery Runtime (Seconds)
+        short_label: Run Sec
+        datapoint: upsc_battery_runtime
+        grid_display: true
+        content_width: 55
+        label_width: 55
+        order: 32
+      BatteryRuntimeLow:
+        label: Low Battery Runtime (Seconds)
+        details_display: false
+      BatteryType:
+        type: string
+        label: Battery Chemistry
+        order: 23
+      BatteryVoltage:
+        label: Battery Voltage
+        datapoint: upsc_battery_voltage
+        order: 41
+      BatteryVoltageNominal:
+        label: Nominal Battery Voltage
+        details_display: false
+      DeviceMfr:
+        type: string
+        label: Device Manufacturer
+        short_label: Manufacturer
+        grid_display: true
+        content_width: 180
+        label_width: 180
+        order: 11
+      DeviceModel:
+        type: string
+        label: Device Model
+        short_label: Model
+        grid_display: true
+        content_width: 135
+        label_width: 135
+        order: 12
+      DeviceName:
+        type: string
+        label: Device Name
+        short_label: Name
+        order: 10
+      DeviceSerial:
+        type: string
+        label: Device Serial Number
+        short_label: Serial
+        order: 13
+      InputTransferHigh:
+        label: High Voltage Transfer Point
+        details_display: false
+      InputTransferLow:
+        label: Low Voltage Transfer Point
+        details_display: false
+      InputVoltage:
+        label: Input Voltage
+        datapoint: upsc_input_voltage
+        order: 40
+      InputVoltageNominal:
+        label: Nominal Input Voltage
+        details_display: false
+      UpsFirmware:
+        type: string
+        label: UPS Firmware
+        order: 20
+      UpsLoad:
+        label: UPS Load Percentage
+        short_label: "Load %"
+        datapoint: upsc_ups_load
+        grid_display: true
+        content_width: 55
+        label_width: 55
+        order: 31
+      UpsMfr:
+        type: string
+        label: UPS Manufacturer
+        details_display: false
+      UpsMfrDate:
+        type: string
+        label: UPS Manufactured
+        order: 21
+      UpsModel:
+        type: string
+        label: UPS Model
+        details_display: false
+      UpsRealpowerNominal:
+        label: Nominal Real Power
+        details_display: false
+      UpsSerial:
+        type: string
+        label: UPS Serial Number
+        details_display: false
+      # UpsStatus:
+      #   label: UPS Status
+      #   short_label: Status
+      #   grid_display: true
+      #   order: 20
+      LoadWarningThreshold:
+        label: "Load % Warning Threshold"
+        editable: true
+        default: 80
+        order: 98
+      LoadErrorThreshold:
+        label: "Load % Error Threshold"
+        editable: true
+        default: 90
+        order: 99
+
+  ATS:
+    base: [NutDevice]
+    label: NUT ATS
+    plural_label: NUT ATS
+    short_label: ATS
+    plural_short_label: ATS
+
+  PDU:
+    base: [NutDevice]
+    label: NUT PDU
+    short_label: PDU
+
+  PSU:
+    base: [NutDevice]
+    label: NUT PSU
+    short_label: PSU
+
+  SCD:
+    base: [NutDevice]
+    label: NUT SCD
+    short_label: SCD
+
+
+device_classes:
+  /:
+    remove: false
+    templates:
+      NUT UPS:
+        targetPythonClass: ZenPacks.daviswr.NUT.UPS
+        datasources:
+          upsc:
+            type: COMMAND
+            usessh: true
+            cycletime: 60
+            component: "${here/id}"
+            parser: ZenPacks.daviswr.NUT.parsers.upsc
+            commandTemplate: |-
+              $$ZENOTHING
+              for UPS in $$(upsc -l 2>/dev/null)
+              do
+                  echo "device.name: $$UPS"
+                  echo "device.clients: $$(upsc -c $$UPS 2>/dev/null | wc -l)"
+                  upsc $$UPS 2>/dev/null
+                  echo "--------"
+              done
+            datapoints:
+              # Won't display for component attributes
+              # with the dot left in the name
+              battery_charge: GAUGE
+              battery_runtime: GAUGE
+              battery_voltage: GAUGE
+              device_clients: GAUGE
+              input_voltage: GAUGE
+              ups_load: GAUGE
+
+        thresholds:
+          Warning Battery Charge:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_battery_charge
+            eventClass: /Status/NUT
+            severity: 3
+            minval: here.BatteryChargeWarning
+          Low Battery Charge:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_battery_charge
+            eventClass: /Status/NUT
+            severity: 4
+            minval: here.BatteryChargeLow
+          Low Battery Runtime:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_battery_runtime
+            eventClass: /Status/NUT
+            severity: 4
+            minval: here.BatteryRuntimeLow
+          High Voltage:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_input_voltage
+            eventClass: /Status/NUT
+            severity: 4
+            maxval: here.InputTransferHigh
+          Low Voltage:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_input_voltage
+            eventClass: /Status/NUT
+            severity: 4
+            minval: here.InputTransferLow
+          Warning Load:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_ups_load
+            eventClass: /Status/NUT
+            severity: 3
+            maxval: here.LoadWarningThreshold
+          Error Load:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_ups_load
+            eventClass: /Status/NUT
+            severity: 4
+            maxval: here.LoadErrorThreshold
+          Battery Voltage:
+            type: MinMaxThreshold
+            dsnames:
+              - upsc_battery_voltage
+            eventClass: /Status/NUT
+            severity: 4
+            minval: "here.BatteryVoltageNominal * 0.85"
+            maxval: "here.BatteryVoltageNominal * 1.15"
+
+        graphs:
+          UPS Load:
+            units: percentage
+            miny: 0
+            maxy: 100
+            graphpoints:
+              Load:
+                dpName: upsc_ups_load
+                lineType: AREA
+                stacked: true
+                format: "%5.2lf"
+                color: 00cc00
+              Error:
+                type: ThresholdGraphPoint
+                threshId: Error Load
+              Warning:
+                type: ThresholdGraphPoint
+                threshId: Warning Load
+          UPS Battery Runtime:
+            miny: 0
+            units: seconds
+            graphpoints:
+              Runtime:
+                dpName: upsc_battery_runtime
+                lineType: AREA
+                stacked: true
+                rpn: FLOOR
+                format: "%5.0lf"
+                color: 00cc00
+              Low Battery:
+                type: ThresholdGraphPoint
+                threshId: Low Battery Runtime
+          UPS Battery Charge:
+            units: percentage
+            miny: 0
+            maxy: 100
+            graphpoints:
+              Charge:
+                dpName: upsc_battery_charge
+                lineType: AREA
+                stacked: true
+                format: "%5.2lf"
+                color: 00cc00
+              Low Battery:
+                type: ThresholdGraphPoint
+                threshId: Low Battery Charge
+              Warning Level:
+                type: ThresholdGraphPoint
+                threshId: Warning Battery Charge
+          UPS Output:
+            units: watts
+            miny: 0
+            graphpoints:
+              Output:
+                dpName: upsc_ups_load
+                lineType: LINE
+                lineWidth: 2
+                rpn: "100,/,${here/UpsRealpowerNominal},*"
+                colorindex: 0
+              Capacity:
+                dpName: upsc_ups_load
+                lineType: LINE
+                lineWidth: 1
+                rpn: "0,*,${here/UpsRealpowerNominal},+"
+                colorindex: 1
+          UPS Input Voltage:
+            units: volts
+            graphpoints:
+              Input:
+                dpName: upsc_input_voltage
+                lineType: LINE
+                lineWidth: 2
+                stacked: true
+                color: 00cc00
+              Nominal:
+                dpName: upsc_input_voltage
+                lineType: LINE
+                lineWidth: 1
+                rpn: "0,*,${here/InputVoltageNominal},+"
+                color: 0000ff
+              Low Transfer:
+                type: ThresholdGraphPoint
+                threshId: Low Voltage
+              High Transfer:
+                type: ThresholdGraphPoint
+                threshId: High Voltage
+          UPS Battery Voltage:
+            units: volts
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+              Battery:
+                dpName: upsc_battery_voltage
+                colorindex: 0
+              Nominal:
+                dpName: upsc_battery_voltage
+                lineType: LINE
+                lineWidth: 1
+                rpn: "0,*,${here/BatteryVoltageNominal},+"
+                colorindex: 1
+          NUT Clients:
+            units: clients
+            miny: 0
+            graphpoints:
+              Clients:
+                dpName: upsc_device_clients
+                lineType: LINE
+                lineWidth: 2
+                format: "%5.0lf"
+                rpn: CEIL
+                colorindex: 0
+
+
+event_classes:
+  # Maybe /HW/Power/NUT?
+  /Status/NUT:
+    remove: true
+    description: Network UPS Tools
+    transform: |-
+      evt.eventClass = '/Status'
+
+
+process_class_organizers:
+  Network UPS Tools:
+    remove: true
+    process_classes:
+      DEFAULTS:
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
+        fail_severity: 4
+      upsd:
+        description: UPS Information Server
+        includeRegex: upsd
+        replaceRegex: "\\/.*\\/(upsd).*"
+        replacement: "\\1"
+      upsmon:
+        description: UPS Monitor and Shutdown Controller
+        includeRegex: upsmon
+        replaceRegex: "\\/.*\\/(upsmon).*"
+        replacement: "\\1"
+      upssched:
+        description: Timer helper for scheduling events from upsmon
+        includeRegex: upssched
+        replaceRegex: "\\/.*\\/(upssched).*"
+        replacement: "\\1"
+      upslog:
+        description: UPS Status Logger
+        includeRegex: upslog
+        replaceRegex: "\\/.*\\/(upslog).*"
+        replacement: "\\1"
