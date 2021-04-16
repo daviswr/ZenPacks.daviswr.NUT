@@ -26,17 +26,6 @@ STATUS_FLAGS = {
     }
 
 
-def encode_status(value):
-    """ Encodes upsc ups.status string to integer """
-    encoded = 0
-    seen = list()
-    for flag in value.split(' '):
-        if flag in STATUS_FLAGS and flag not in seen:
-            encoded += STATUS_FLAGS[flag]
-            seen.append(flag)
-    return encoded
-
-
 class upsc(CommandParser):
     """ Parses performance data from upsc """
 
@@ -54,7 +43,8 @@ class upsc(CommandParser):
                     if 'device_name' == key:
                         dev_name = value
                     elif 'ups_status' == key:
-                        dev_map[key] = encode_status(value.upper())
+                        flags = set(value.split(' '))
+                        dev_map[key] = sum(STATUS_FLAGS[flag] for flag in flags)  # noqa
                     elif value.isdigit():
                         dev_map[key] = int(value)
                     else:
