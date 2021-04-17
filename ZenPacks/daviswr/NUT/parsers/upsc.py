@@ -3,33 +3,14 @@
 from Products.ZenRRD.CommandParser import CommandParser
 from Products.ZenUtils.Utils import prepId
 
-STATUS_FLAGS = {
-    # Clear
-    'OL': 1,
-    'CHRG': 2,
-    # Info
-    'HB': 4,
-    # Warning
-    'OB': 8,
-    'DISCHRG': 16,
-    'CAL': 32,
-    'TRIM': 64,
-    'BOOST': 128,
-    # Error
-    'LB': 256,
-    'RB': 512,
-    'BYPASS': 1024,
-    'OFF': 2048,
-    'OVER': 4096,
-    # Critical
-    'FSD': 8192,
-    }
+from ZenPacks.daviswr.NUT.lib.util import encode_status
 
 
 class upsc(CommandParser):
     """ Parses performance data from upsc """
 
     def processResults(self, cmd, result):
+        """ Returns metrics from command output """
         components = dict()
         devices = cmd.result.output.split('--------')
 
@@ -43,8 +24,7 @@ class upsc(CommandParser):
                     if 'device_name' == key:
                         dev_name = value
                     elif 'ups_status' == key:
-                        flags = set(value.split(' '))
-                        dev_map[key] = sum(STATUS_FLAGS[flag] for flag in flags)  # noqa
+                        dev_map[key] = encode_status(value)
                     elif value.isdigit():
                         dev_map[key] = int(value)
                     else:
