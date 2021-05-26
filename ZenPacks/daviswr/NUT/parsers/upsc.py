@@ -1,5 +1,6 @@
 """ Parses performance data from upsc """
 
+from Products.ZenEvents import Event
 from Products.ZenRRD.CommandParser import CommandParser
 from Products.ZenUtils.Utils import prepId
 
@@ -17,14 +18,20 @@ class upsc(CommandParser):
         for device in devices:
             dev_map = dict()
             dev_name = ''
+            dev_type = ''
+            alarm = ''
             for line in device.splitlines():
                 if ': ' in line:
                     key, value = line.split(': ')
                     key = key.replace('.', '_')
                     if 'device_name' == key:
                         dev_name = value
+                    elif 'device_type' == key:
+                        dev_type = value
                     elif 'ups_status' == key:
                         dev_map[key] = encode_status(value)
+                    elif key.endswith('alarm'):
+                        alarm = line.replace('.', ' ')
                     elif value.isdigit():
                         dev_map[key] = int(value)
                     else:
@@ -35,6 +42,20 @@ class upsc(CommandParser):
 
             if dev_name:
                 components[prepId(dev_name)] = dev_map
+                if 'ups' == dev_type:
+                    alarm = alarm.replace('ups', 'UPS')
+                    evt_cls = '/HW/Power/UPS'
+                else:
+                    evt_cls = '/HW/Power'
+
+                result.events.append({
+                    'device': cmd.deviceConfig.device,
+                    'component': dev_name,
+                    'severity': Event.Warning if alarm else Event.Clear,
+                    'eventKey': 'upsc',
+                    'eventClass': evt_cls,
+                    'summary': alarm if alarm else 'No alarms present',
+                    })
 
         for point in cmd.points:
             if point.component in components:
