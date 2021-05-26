@@ -20,6 +20,7 @@ STATUS_FLAGS = {
     'OVER': 4096,
     # Critical
     'FSD': 8192,
+    'ALARM': 16384,
     }
 
 
@@ -28,6 +29,7 @@ def decode_status(current):
 
     flag_states = dict((value, key) for key, value in STATUS_FLAGS.items())
     flag_order = [
+        ['ALARM', ],
         ['FSD', ],
         ['OL', 'OB', 'OFF'],
         ['CHRG', 'DISCHRG'],
@@ -51,6 +53,7 @@ def decode_status(current):
         'TRIM': 'Trimming Voltage',
         'BOOST': 'Boosting Voltage',
         'FSD': 'Forced Shutdown',
+        'ALARM': 'Alarm',
         }
 
     current = int(float(current))
