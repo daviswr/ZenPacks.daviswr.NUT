@@ -85,6 +85,7 @@ class NUT(CommandPlugin):
 
         for device in devices:
             dev_map = dict()
+
             for line in device.splitlines():
                 if ': ' in line:
                     key = ''
@@ -105,6 +106,25 @@ class NUT(CommandPlugin):
                         ' .',
                         '.'
                         )
+
+                # APC PowerChute, when updating the battery changed date,
+                # updates the value that NUT reads as battery.mfr.date
+                # rather than battery.date
+                if 'BatteryDate' in dev_map and 'BatteryMfrDate' in dev_map:
+                    try:
+                        bat_date = int(dev_map['BatteryDate'].replace('/', ''))
+                        mfr_date = int(
+                            dev_map['BatteryMfrDate'].replace('/', '')
+                            )
+                        # This assumes YYYY/MM/DD
+                        if mfr_date > bat_date:
+                            dev_map['BatteryDate'] = dev_map['BatteryMfrDate']
+                        elif bat_date > mfr_date:
+                            dev_map['BatteryMfrDate'] = dev_map['BatteryDate']
+                    except ValueError:
+                        if ('American Power Conversion' in dev_map['DevceMfr']
+                                or 'APC' in dev_map['DeviceMfr']):
+                            dev_map['BatteryDate'] = dev_map['BatteryMfrDate']
 
                 dev_type = dev_map.get('DeviceType', 'NutDevice')
                 modname = 'ZenPacks.daviswr.NUT.'
