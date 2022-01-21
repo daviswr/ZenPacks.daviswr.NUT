@@ -368,7 +368,7 @@ device_classes:
               Warning Level:
                 type: ThresholdGraphPoint
                 threshId: Warning Battery Charge
-          UPS Output:
+          UPS Output Power:
             units: watts
             miny: 0
             graphpoints:
@@ -384,6 +384,20 @@ device_classes:
                 lineWidth: 1
                 rpn: "0,*,${here/UpsRealpowerNominal},+"
                 colorindex: 1
+          UPS Input Current:
+            units: amps
+            miny: 0
+            graphpoints:
+              input_voltage:
+                dpName: upsc_input_voltage
+                lineType: DONTDRAW
+              Current:
+                dpName: upsc_ups_load
+                lineType: LINE
+                lineWidth: 2
+                stacked: true
+                rpn: "100,/,${here/UpsRealpowerNominal},*,input_voltage,/"
+                color: 00cc00
           UPS Input Voltage:
             units: volts
             graphpoints:
