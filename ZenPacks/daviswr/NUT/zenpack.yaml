@@ -8,50 +8,46 @@ classes:
     base: [zenpacklib.Component]
     label: NUT Device
     properties:
-      DeviceMfr:
+      DEFAULTS:
         type: string
+        grid_display: false
+        details_display: true
+      DeviceDescr:
+        type: string
+        label: Device Description
+        short_label: Description
+        order: 11
+      DeviceMfr:
         label: Device Manufacturer
         short_label: Manufacturer
         grid_display: true
-        details_display: true
         content_width: 180
         label_width: 180
-        order: 11
+        order: 12
       DeviceModel:
-        type: string
         label: Device Model
         short_label: Model
         grid_display: true
-        details_display: true
         content_width: 135
         label_width: 135
-        order: 12
+        order: 13
       DeviceName:
-        type: string
         label: Device Name
         short_label: Name
-        grid_display: false
-        details_display: true
         order: 10
       DeviceSerial:
-        type: string
         label: Device Serial Number
         short_label: Serial
-        grid_display: false
-        details_display: true
+        order: 14
       DeviceType:
-        type: string
         # UPS, PDU, SCD, PSU, ATS
         label: Device Type
         short_label: Type
         default: Unknown
-        grid_display: false
         details_display: false
       DriverName:
-        type: string
         label: Driver Name
         short_label: Driver
-        grid_display: false
         details_display: false
 
   UPS:
@@ -111,32 +107,34 @@ classes:
       BatteryVoltageNominal:
         label: Nominal Battery Voltage
         details_display: false
-      DeviceMfr:
+      # grid_display isn't inherited from the parent class
+      DeviceDescr:
         type: string
+        label: Device Description
+        short_label: Description
+        order: 11
+      DeviceMfr:
         label: Device Manufacturer
         short_label: Manufacturer
         grid_display: true
         content_width: 180
         label_width: 180
-        order: 11
+        order: 12
       DeviceModel:
-        type: string
         label: Device Model
         short_label: Model
         grid_display: true
         content_width: 135
         label_width: 135
-        order: 12
+        order: 13
       DeviceName:
-        type: string
         label: Device Name
         short_label: Name
         order: 10
       DeviceSerial:
-        type: string
         label: Device Serial Number
         short_label: Serial
-        order: 13
+        order: 14
       InputTransferHigh:
         label: High Voltage Transfer Point
         details_display: false

@@ -12,9 +12,13 @@ class NUT(CommandPlugin):
 
     commands = [
         '$ZENOTHING',
-        'for UPS in $(upsc -l 2>/dev/null)',
-        'do echo "device.name: $UPS"',
-        'upsc $UPS 2>/dev/null',
+        'IFS=$"\\n"',
+        'for ups in $(upsc -L 2>/dev/null)',
+        'do ups_name=$(echo $ups | cut -d: -f1)',
+        'ups_descr=$(echo $ups | cut -d: -f2-)',
+        'echo "device.name: $ups_name"',
+        'echo "device.descr: $ups_descr"',
+        'upsc $ups_name 2>/dev/null',
         'echo "--------"',
         'done',
         ]
@@ -34,6 +38,7 @@ class NUT(CommandPlugin):
         """ Example output
 
         device.name: rs1200
+        device.descr:  APC Back-UPS RS 1200
         battery.charge: 100
         battery.charge.low: 10
         battery.charge.warning: 50
@@ -89,7 +94,8 @@ class NUT(CommandPlugin):
             for line in device.splitlines():
                 if ': ' in line:
                     key = ''
-                    key_raw, value = line.split(': ')
+                    key_raw, value = line.split(': ', 1)
+                    value = value.strip()
                     for term in key_raw.split('.'):
                         key += term.title()
                     if value.isdigit():
