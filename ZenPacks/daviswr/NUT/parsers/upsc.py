@@ -22,7 +22,7 @@ class upsc(CommandParser):
             alarm = ''
             for line in device.splitlines():
                 if ': ' in line:
-                    key, value = line.split(': ')
+                    key, value = line.split(': ', 1)
                     key = key.replace('.', '_')
                     if 'device_name' == key:
                         dev_name = value
